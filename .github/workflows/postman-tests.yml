@@ -30,11 +30,18 @@ jobs:
       - name: Install Newman
         run: npm install newman --save-dev
 
+      - name: 🧠 Inject Vault Variable into Environment
+        run: |
+          jq --arg key "$API_KEY" '.values += [{"key":"vault.api-key","value":$key,"enabled":true}]' postman-tests/environment.json > postman-tests/environment-github.json
+
+        env:
+          API_KEY: ${{ secrets.API_KEY }}
+
       - name: Run Postman Tests
         run: |
           mkdir -p postman-tests/reports
           npx newman run postman-tests/ReqRes.in.postman_collection.json \
-            -e postman-tests/ReqRes.postman_environment.json \
+            -e postman-tests/environment-github.json \
             --reporters cli,html \
             --reporter-html-export postman-tests/reports/report.html
 

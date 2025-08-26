@@ -1,0 +1,7 @@
+Your Postman Vault Key (milanmmore@gmail.com)
+
+a28ee938709f6782590fe98a43accbc9840fb359cf8c3568ee7795859b19edfa
+
+• Keep this key somewhere safe but accessible.
+• Need more information? Visit https://go.pstmn.io/vault
+• This key was generated on: Aug 26 2025.

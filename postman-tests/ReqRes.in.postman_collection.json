@@ -1,14 +1,13 @@
 {
 	"info": {
-		"_postman_id": "c3b418f3-4cf9-4013-9701-c478cc6f8552",
-		"name": "ReqRes.in",
-		"description": "This Postman collection contains a set of automated API tests for the [ReqRes API](https://reqres.in/), a public API for testing RESTful requests. The collection is structured into different folders for better organization and includes various test cases to validate API functionality, response structure, and error handling.\n\nThis collection is designed to **showcase API testing skills** by covering common scenarios, data validation, and response structure verification.\n\n**Note:** This collection was created for learning purposes.",
+		"_postman_id": "21926e3b-addc-41d3-9792-131b9d0d559c",
+		"name": "API Testing for Reqres.in",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "42441677"
+		"_exporter_id": "1033931"
 	},
 	"item": [
 		{
-			"name": "Users",
+			"name": "Get request",
 			"item": [
 				{
 					"name": "List Users",
@@ -19,6 +18,8 @@
 								"exec": [
 									"// VARIABLES\r",
 									"const responseData = pm.response.json();\r",
+									"//pm.environment.set(\"userID\", responseData.data[0].id);\r",
+									"\r",
 									"\r",
 									"\r",
 									"// TESTS\r",
@@ -172,7 +173,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{vault.api-key}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/api/users/{{userID}}",
 							"host": [
@@ -189,7 +196,7 @@
 					"response": []
 				},
 				{
-					"name": "User Not Found",
+					"name": "Single User Not Found",
 					"event": [
 						{
 							"listen": "test",
@@ -214,268 +221,28 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{vault.api-key}}",
+								"type": "text"
+							}
+						],
 						"url": {
-							"raw": "{{base_url}}/api/users/23",
+							"raw": "{{base_url}}/api/users/1234",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"api",
 								"users",
-								"23"
+								"1234"
 							]
 						},
 						"description": "Tests the behavior when requesting a non-existent user."
 					},
 					"response": []
 				},
-				{
-					"name": "Create User",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"// VARIABLES\r",
-									"responseData = pm.response.json();\r",
-									"\r",
-									"// TESTS\r",
-									"pm.test(\"Status code is 201\", function () {\r",
-									"    pm.response.to.have.status(201);\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Response contains required fields\"), function () {\r",
-									"    pm.expect(responseData).to.be.an(\"object\");\r",
-									"    pm.expect(responseData).to.have.property(\"name\").that.is.a(\"string\");\r",
-									"    pm.expect(responseData).to.have.property(\"job\").that.is.a(\"string\");\r",
-									"    pm.expect(responseData).to.have.property(\"id\").that.is.a(\"string\");\r",
-									"    pm.expect(responseData).to.have.property(\"createdAt\").that.is.a(\"string\");\r",
-									"};\r",
-									"\r",
-									"pm.test(\"Response matches request body\", function () {\r",
-									"    pm.expect(responseData.name).to.equal(\"morpheus\");\r",
-									"    pm.expect(responseData.job).to.equal(\"leader\");\r",
-									"});\r",
-									"\r",
-									"pm.test(\"ID is a non-empty string\", function () {\r",
-									"     pm.expect(responseData.id).to.be.a('string').that.is.not.empty;\r",
-									"});\r",
-									"\r",
-									"pm.test(\"createdAt is a valid timestamp\", function () {\r",
-									"    let dateRegex = /^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$/;\r",
-									"    pm.expect(responseData.createdAt).to.match(dateRegex);\r",
-									"});"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"morpheus\",\r\n    \"job\": \"leader\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{base_url}}/api/users",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"users"
-							]
-						},
-						"description": "Creates a new user with the provided `name` and `job`."
-					},
-					"response": []
-				},
-				{
-					"name": "Update User",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"// VARIABLES\r",
-									"const responseData = pm.response.json();\r",
-									"\r",
-									"\r",
-									"// TESTS\r",
-									"pm.test(\"Status code is 200\", function () {\r",
-									"    pm.response.to.have.status(200);\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Response contains required fields\"), function () {\r",
-									"    pm.expect(responseData).to.be.an(\"object\");\r",
-									"    pm.expect(responseData).to.have.property(\"name\").that.is.a(\"string\");\r",
-									"    pm.expect(responseData).to.have.property(\"job\").that.is.a(\"string\");\r",
-									"    pm.expect(responseData).to.have.property(\"updatedAt\").that.is.a(\"string\");\r",
-									"};\r",
-									"\r",
-									"pm.test(\"Response matches request body\", function () {\r",
-									"    pm.expect(responseData.name).to.equal(\"morpheus\");\r",
-									"    pm.expect(responseData.job).to.equal(\"zion resident\");\r",
-									"});\r",
-									"\r",
-									"pm.test(\"updatedAt is a valid timestamp\", function () {\r",
-									"    let dateRegex = /^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$/;\r",
-									"    pm.expect(responseData.updatedAt).to.match(dateRegex);\r",
-									"});"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"method": "PUT",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"morpheus\",\r\n    \"job\": \"zion resident\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{base_url}}/api/users/2",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"users",
-								"2"
-							]
-						},
-						"description": "Updates an existing user by replacing their data."
-					},
-					"response": []
-				},
-				{
-					"name": "Update User (Patch)",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"// VARIABLES\r",
-									"const responseData = pm.response.json();\r",
-									"\r",
-									"\r",
-									"// TESTS\r",
-									"pm.test(\"Status code is 200\", function () {\r",
-									"    pm.response.to.have.status(200);\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Response contains required fields\"), function () {\r",
-									"    pm.expect(responseData).to.be.an(\"object\");\r",
-									"    pm.expect(responseData).to.have.property(\"name\").that.is.a(\"string\");\r",
-									"    pm.expect(responseData).to.have.property(\"job\").that.is.a(\"string\");\r",
-									"    pm.expect(responseData).to.have.property(\"updatedAt\").that.is.a(\"string\");\r",
-									"};\r",
-									"\r",
-									"pm.test(\"Response matches request body\", function () {\r",
-									"    pm.expect(responseData.job).to.equal(\"engineer\");\r",
-									"});\r",
-									"\r",
-									"pm.test(\"updatedAt is a valid timestamp\", function () {\r",
-									"    let dateRegex = /^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$/;\r",
-									"    pm.expect(responseData.updatedAt).to.match(dateRegex);\r",
-									"});"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"method": "PATCH",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"job\": \"engineer\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{base_url}}/api/users/2",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"users",
-								"2"
-							]
-						},
-						"description": "Partially updates a user by modifying only the specified fields."
-					},
-					"response": []
-				},
-				{
-					"name": "Delete User",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"// TESTS\r",
-									"pm.test(\"Status code is 204\", function () {\r",
-									"    pm.response.to.have.status(204);\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Response body is empty\", function () {\r",
-									"    pm.expect(pm.response.text()).to.be.empty;\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Content-Length is 0\"), function () {\r",
-									"    pm.expect(pm.response.headers.get(\"Content-Length\")).to.equal(0);\r",
-									"}"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"method": "DELETE",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/api/users/2",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"users",
-								"2"
-							]
-						},
-						"description": "Deletes a user."
-					},
-					"response": []
-				}
-			],
-			"description": "Contains requests for managing users in the ReqRes API. Includes fetching user lists, retrieving single users, creating, updating, deleting users, and testing error handling for non-existing users."
-		},
-		{
-			"name": "Resources",
-			"item": [
 				{
 					"name": "List Resources",
 					"event": [
@@ -538,7 +305,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{vault.api-key}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/api/unknown",
 							"host": [
@@ -622,7 +395,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{vault.api-key}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/api/unknown/{{resourceID}}",
 							"host": [
@@ -664,7 +443,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{vault.api-key}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/api/unknown/23",
 							"host": [
@@ -680,14 +465,297 @@
 					},
 					"response": []
 				}
-			],
-			"description": "Handles requests related to resources. Includes fetching a list of resources, retrieving a single resource, and testing error handling for non-existing resources."
+			]
 		},
 		{
-			"name": "Auth",
+			"name": "Post Request",
 			"item": [
 				{
-					"name": "Register User",
+					"name": "Create User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// VARIABLES\r",
+									"responseData = pm.response.json();\r",
+									"\r",
+									"// TESTS\r",
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Response contains required fields\"), function () {\r",
+									"    pm.expect(responseData).to.be.an(\"object\");\r",
+									"    pm.expect(responseData).to.have.property(\"name\").that.is.a(\"string\");\r",
+									"    pm.expect(responseData).to.have.property(\"job\").that.is.a(\"string\");\r",
+									"    pm.expect(responseData).to.have.property(\"id\").that.is.a(\"string\");\r",
+									"    pm.expect(responseData).to.have.property(\"createdAt\").that.is.a(\"string\");\r",
+									"};\r",
+									"\r",
+									"pm.test(\"Response matches request body\", function () {\r",
+									"    pm.expect(responseData.name).to.equal(\"morpheus\");\r",
+									"    pm.expect(responseData.job).to.equal(\"leader\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"ID is a non-empty string\", function () {\r",
+									"     pm.expect(responseData.id).to.be.a('string').that.is.not.empty;\r",
+									"});\r",
+									"\r",
+									"pm.test(\"createdAt is a valid timestamp\", function () {\r",
+									"    let dateRegex = /^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$/;\r",
+									"    pm.expect(responseData.createdAt).to.match(dateRegex);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{vault.api-key}}",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"morpheus\",\r\n    \"job\": \"leader\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/users",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users"
+							]
+						},
+						"description": "Creates a new user with the provided `name` and `job`."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Put request",
+			"item": [
+				{
+					"name": "Update User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// VARIABLES\r",
+									"const responseData = pm.response.json();\r",
+									"\r",
+									"\r",
+									"// TESTS\r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Response contains required fields\"), function () {\r",
+									"    pm.expect(responseData).to.be.an(\"object\");\r",
+									"    pm.expect(responseData).to.have.property(\"name\").that.is.a(\"string\");\r",
+									"    pm.expect(responseData).to.have.property(\"job\").that.is.a(\"string\");\r",
+									"    pm.expect(responseData).to.have.property(\"updatedAt\").that.is.a(\"string\");\r",
+									"};\r",
+									"\r",
+									"pm.test(\"Response matches request body\", function () {\r",
+									"    pm.expect(responseData.name).to.equal(\"morpheus\");\r",
+									"    pm.expect(responseData.job).to.equal(\"zion resident\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"updatedAt is a valid timestamp\", function () {\r",
+									"    let dateRegex = /^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$/;\r",
+									"    pm.expect(responseData.updatedAt).to.match(dateRegex);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{vault.api-key}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"morpheus\",\r\n    \"job\": \"zion resident\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/users/2",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"2"
+							]
+						},
+						"description": "Updates an existing user by replacing their data."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Patch request",
+			"item": [
+				{
+					"name": "Update User(Patch)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// VARIABLES",
+									"const responseData = pm.response.json();",
+									"",
+									"",
+									"// TESTS",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response contains required fields\"), function () {",
+									"    pm.expect(responseData).to.be.an(\"object\");",
+									"    pm.expect(responseData).to.have.property(\"name\").that.is.a(\"string\");",
+									"    pm.expect(responseData).to.have.property(\"job\").that.is.a(\"string\");",
+									"    pm.expect(responseData).to.have.property(\"updatedAt\").that.is.a(\"string\");",
+									"};",
+									"",
+									"pm.test(\"Response matches request body\", function () {",
+									"    pm.expect(responseData.job).to.equal(\"engineer\");",
+									"});",
+									"",
+									"pm.test(\"updatedAt is a valid timestamp\", function () {",
+									"    let dateRegex = /^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$/;",
+									"    pm.expect(responseData.updatedAt).to.match(dateRegex);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{vault.api-key}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"job\": \"engineer\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/users/2",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"2"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Delete Request",
+			"item": [
+				{
+					"name": "Delete User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// TESTS\r",
+									"pm.test(\"Status code is 204\", function () {\r",
+									"    pm.response.to.have.status(204);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Response body is empty\", function () {\r",
+									"    pm.expect(pm.response.text()).to.be.empty;\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Content-Length is 0\"), function () {\r",
+									"    pm.expect(pm.response.headers.get(\"Content-Length\")).to.equal(0);\r",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "reqres-free-v1",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/users/2",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"2"
+							]
+						},
+						"description": "Deletes a user."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Post request (Authentication)",
+			"item": [
+				{
+					"name": "Registration Successfull",
 					"event": [
 						{
 							"listen": "test",
@@ -718,7 +786,13 @@
 					],
 					"request": {
 						"method": "POST",
-						"header": [],
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{vault.api-key}}",
+								"type": "text"
+							}
+						],
 						"body": {
 							"mode": "raw",
 							"raw": "{\r\n    \"email\": \"eve.holt@reqres.in\",\r\n    \"password\": \"pistol\"\r\n}",
@@ -743,7 +817,7 @@
 					"response": []
 				},
 				{
-					"name": "Register User - Fail",
+					"name": "Registration UnSuccessfull",
 					"event": [
 						{
 							"listen": "test",
@@ -798,7 +872,7 @@
 					"response": []
 				},
 				{
-					"name": "Login",
+					"name": "Login Successful",
 					"event": [
 						{
 							"listen": "test",
@@ -853,7 +927,7 @@
 					"response": []
 				},
 				{
-					"name": "Login - Fail",
+					"name": "Login Unsuccessful",
 					"event": [
 						{
 							"listen": "test",
@@ -907,11 +981,10 @@
 					},
 					"response": []
 				}
-			],
-			"description": "Contains authentication-related requests, including user registration and login. Includes both successful and failure scenarios to test error handling."
+			]
 		},
 		{
-			"name": "Miscellaneous",
+			"name": "Get Request (performance)",
 			"item": [
 				{
 					"name": "Delayed Response",
@@ -961,10 +1034,29 @@
 					},
 					"response": []
 				}
-			],
-			"description": "Other API requests that do not fit into the main categories. Includes delayed response to test API behavior under different conditions."
+			]
 		}
 	],
+	"auth": {
+		"type": "apikey",
+		"apikey": [
+			{
+				"key": "value",
+				"value": "{{vault.api-key}}",
+				"type": "string"
+			},
+			{
+				"key": "key",
+				"value": "x-api-key",
+				"type": "string"
+			},
+			{
+				"key": "in",
+				"value": "header",
+				"type": "string"
+			}
+		]
+	},
 	"event": [
 		{
 			"listen": "prerequest",
@@ -982,19 +1074,7 @@
 				"type": "text/javascript",
 				"packages": {},
 				"exec": [
-					"// TESTS\r",
-					"if (pm.info.requestName !== \"Delayed Response\") {\r",
-					"    pm.test(\"Response time is less than 1 second\", function () {\r",
-					"        pm.expect(pm.response.responseTime).to.be.below(1000)\r",
-					"    });\r",
-					"}\r",
-					"\r",
-					"if (pm.info.requestName !== \"Delete User\") {\r",
-					"    pm.test(\"Response has correct Content-Type header\", function () {\r",
-					"        pm.response.to.have.header(\"Content-Type\");\r",
-					"        pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\")\r",
-					"    });\r",
-					"}"
+					""
 				]
 			}
 		}
@@ -1003,6 +1083,10 @@
 		{
 			"key": "userID",
 			"value": ""
+		},
+		{
+			"value": "",
+			"disabled": true
 		},
 		{
 			"key": "resourceID",
