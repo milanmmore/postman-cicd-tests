@@ -19,28 +19,11 @@ jobs:
         with:
           node-version: "18"
 
-      - name: 📦 Cache npm
-        uses: actions/cache@v3
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-npm-
-
-      # Optional: Use GitHub's registry mirror to reduce throttling
-      # - name: 🔄 Set npm registry
-      #   run: npm config set registry https://registry.npmjs.org/
-
-      - name: 🚀 Install Newman with retry logic
-        run: |
-          for i in {1..3}; do
-            npm install newman --save-dev && break
-            echo "Retrying npm install... ($i)"
-            sleep $((i * 5))
-          done
-
       - name: 🔐 Inject Vault Variable into Environment
         run: |
+          if [ ! -f postman-tests/environment.json ]; then
+            echo "❌ Environment file missing"; exit 1;
+          fi
           jq --arg key "$API_KEY" \
             '.values += [{"key":"vault.api-key","value":$key,"enabled":true}]' \
             postman-tests/environment.json > postman-tests/environment-github.json
@@ -60,7 +43,10 @@ jobs:
         with:
           name: postman-report
           path: postman-tests/reports/report.html
-          retention-days: 5 # Optional: keep artifacts for 5 days
+          retention-days: 5
+
+      - name: 📄 Add Summary
+        run: echo "✅ Postman tests completed. [View HTML Report](./postman-tests/reports/report.html)" >> $GITHUB_STEP_SUMMARY
 
       - name: 📣 Notify Slack
         if: always()
@@ -69,3 +55,5 @@ jobs:
             -H 'Content-type: application/json' \
             --data '{"text":"✅ Postman tests completed. View report in GitHub Actions → Artifacts."}' \
             ${{ secrets.SLACK_WEBHOOK }}
+
+
