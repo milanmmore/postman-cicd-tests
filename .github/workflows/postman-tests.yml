@@ -42,16 +42,15 @@ jobs:
         run: ls -la postman-tests/reports || echo "⚠️ Report directory missing"
 
       - name: 📤 Upload HTML Report
-        if: always()
+        id: upload_report
         run: |
           if [ -f postman-tests/reports/report.html ]; then
-            echo "✅ Report found. Uploading..."
+          echo "✅ Report found. Uploading..."
+          echo "report_status=found" >> $GITHUB_OUTPUT
           else
-            echo "⚠️ Report not found. Skipping upload."
-            echo "⚠️ Warning: No report.html found in postman-tests/reports" >> $GITHUB_ENV
-            exit 0
+          echo "⚠️ Report not found. Skipping upload."
+          echo "report_status=missing" >> $GITHUB_OUTPUT
           fi
-        continue-on-error: true
 
       - name: 📣 Notify Slack
         if: always()
@@ -59,41 +58,40 @@ jobs:
           STATUS="${{ job.status }}"
           COLOR="#e01e5a" # Default to red
           if [ "$STATUS" = "success" ]; then
-            COLOR="#2eb886"
+          COLOR="#2eb886"
           fi
 
+          REPORT_STATUS="${{ steps.upload_report.outputs.report_status }}"
           WARNING_MSG=""
-          if [ -n "$WARNING" ]; then
-            WARNING_MSG="⚠️ $WARNING"
-          elif [ ! -f postman-tests/reports/report.html ]; then
-            WARNING_MSG="⚠️ Report not generated or missing."
+          if [ "$REPORT_STATUS" = "missing" ]; then
+          WARNING_MSG="⚠️ HTML report was not generated or is missing."
           fi
 
           curl -X POST \
-            -H 'Content-type: application/json' \
-            --data "{
+          -H 'Content-type: application/json' \
+          --data "{
               \"text\": \"*Postman Tests Status:* \`$STATUS\`\n$WARNING_MSG\n🔗 <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}> View full run in GitHub Actions.\",
               \"attachments\": [
-                {
+              {
                   \"color\": \"$COLOR\",
                   \"fields\": [
-                    {
+                  {
                       \"title\": \"Workflow\",
                       \"value\": \"${{ github.workflow }}\",
                       \"short\": true
-                    },
-                    {
+                  },
+                  {
                       \"title\": \"Branch\",
                       \"value\": \"${{ github.ref_name }}\",
                       \"short\": true
-                    },
-                    {
+                  },
+                  {
                       \"title\": \"Commit\",
                       \"value\": \"${{ github.sha }}\",
                       \"short\": false
-                    }
+                  }
                   ]
-                }
+              }
               ]
-            }" \
-            ${{ secrets.SLACK_WEBHOOK }}
+          }" \
+          ${{ secrets.SLACK_WEBHOOK }}
