@@ -1,0 +1,45 @@
+name: Run Postman API Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  postman-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+
+      - name: Install Newman
+        run: npm install -g newman
+
+      - name: Run Postman Tests
+        run: |
+          mkdir -p postman-tests/reports
+          newman run postman-tests/collection.json \
+            -e postman-tests/environment.json \
+            --reporters cli,html \
+            --reporter-html-export postman-tests/reports/report.html
+
+      - name: Upload HTML Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: postman-report
+          path: postman-tests/reports/report.html
+
+      - name: Notify Slack
+        if: always()
+        run: |
+          curl -X POST \
+            -H 'Content-type: application/json' \
+            --data '{"text":"✅ Postman tests completed. View report in GitHub Actions → Artifacts."}' \
+            ${{ secrets.SLACK_WEBHOOK }}
