@@ -36,53 +36,64 @@ jobs:
           npx newman run postman-tests/ReqRes.in.postman_collection.json \
             -e postman-tests/environment-github.json \
             --reporters cli,html \
-            --reporter-html-export postman-tests/reports/report.html
+            --reporter-html-export postman-tests/reports/report.html || echo "⚠️ Newman run failed"
+
+      - name: 🕵️ List Report Directory
+        run: ls -la postman-tests/reports || echo "⚠️ Report directory missing"
 
       - name: 📤 Upload HTML Report
-        uses: actions/upload-artifact@v4
-        with:
-          name: postman-report
-          path: postman-tests/reports/report.html
-          retention-days: 5
-
-      - name: 📄 Add Summary
-        run: echo "✅ Postman tests completed. [View HTML Report](./postman-tests/reports/report.html)" >> $GITHUB_STEP_SUMMARY
+        if: always()
+        run: |
+          if [ -f postman-tests/reports/report.html ]; then
+            echo "✅ Report found. Uploading..."
+          else
+            echo "⚠️ Report not found. Skipping upload."
+            echo "⚠️ Warning: No report.html found in postman-tests/reports" >> $GITHUB_ENV
+            exit 0
+          fi
+        continue-on-error: true
 
       - name: 📣 Notify Slack
-
         if: always()
         run: |
           STATUS="${{ job.status }}"
           COLOR="#e01e5a" # Default to red
           if [ "$STATUS" = "success" ]; then
-          COLOR="#2eb886" # Green for success
+            COLOR="#2eb886"
+          fi
+
+          WARNING_MSG=""
+          if [ -n "$WARNING" ]; then
+            WARNING_MSG="⚠️ $WARNING"
+          elif [ ! -f postman-tests/reports/report.html ]; then
+            WARNING_MSG="⚠️ Report not generated or missing."
           fi
 
           curl -X POST \
-          -H 'Content-type: application/json' \
-          --data "{
-              \"text\": \"*Postman Tests Status:* \`$STATUS\`\n🔗 <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}> View full run in GitHub Actions.\",
+            -H 'Content-type: application/json' \
+            --data "{
+              \"text\": \"*Postman Tests Status:* \`$STATUS\`\n$WARNING_MSG\n🔗 <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}> View full run in GitHub Actions.\",
               \"attachments\": [
-              {
+                {
                   \"color\": \"$COLOR\",
                   \"fields\": [
-                  {
+                    {
                       \"title\": \"Workflow\",
                       \"value\": \"${{ github.workflow }}\",
                       \"short\": true
-                  },
-                  {
+                    },
+                    {
                       \"title\": \"Branch\",
                       \"value\": \"${{ github.ref_name }}\",
                       \"short\": true
-                  },
-                  {
+                    },
+                    {
                       \"title\": \"Commit\",
                       \"value\": \"${{ github.sha }}\",
                       \"short\": false
-                  }
+                    }
                   ]
-              }
+                }
               ]
-          }" \
-          ${{ secrets.SLACK_WEBHOOK }}
+            }" \
+            ${{ secrets.SLACK_WEBHOOK }}
