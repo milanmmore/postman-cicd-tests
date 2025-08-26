@@ -1,0 +1,36 @@
+image: node:18
+
+stages:
+  - test
+  - notify
+
+variables:
+  SLACK_WEBHOOK: "https://hooks.slack.com/services/your/webhook/url"
+
+before_script:
+  - npm install -g newman
+
+test_api:
+  stage: test
+  script:
+    - mkdir -p tests/reports
+    - newman run postman-tests/collection.json \
+      -e tests/environment.json \
+      --reporters cli,html \
+      --reporter-html-export tests/reports/report.html
+  artifacts:
+    paths:
+      - tests/reports/report.html
+
+notify_team:
+  stage: notify
+  script:
+    - |
+      curl -X POST -H 'Content-type: application/json' \
+      --data '{"text":"✅ Postman API tests completed. View report: '$CI_PROJECT_URL'/-/jobs/'$CI_JOB_ID'"}' \
+      $SLACK_WEBHOOK
+    - |
+      echo "Sending email..."
+      echo "Postman API Test Report attached." | mail -s "API Test Report" \
+      -A tests/reports/report.html milanmmore@gmail.com
+  when: always
