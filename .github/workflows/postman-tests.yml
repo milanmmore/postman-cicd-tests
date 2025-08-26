@@ -26,7 +26,7 @@ jobs:
         run: |
           mkdir -p postman-tests/reports
           newman run postman-tests/ReqRes.in.postman_collection.json \
-            -e postman-tests/ReqRes.in.postman_environment.json \
+            -e postman-tests/ReqRes.postman_environment.json \
             --reporters cli,html \
             --reporter-html-export postman-tests/reports/report.html
 
