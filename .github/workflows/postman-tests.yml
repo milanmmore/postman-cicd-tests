@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 jobs:
-  postman-tests:
+  tests:
     runs-on: ubuntu-latest
 
     steps:
@@ -24,36 +24,36 @@ jobs:
 
       - name: 🔐 Inject Vault Variable into Environment
         run: |
-          if [ ! -f postman-tests/environment.json ]; then
+          if [ ! -f tests/environment.json ]; then
             echo "❌ Environment file missing"; exit 1;
           fi
           jq --arg key "$API_KEY" \
             '.values += [{"key":"vault.api-key","value":$key,"enabled":true}]' \
-            postman-tests/environment.json > postman-tests/environment-github.json
+            tests/environment.json > tests/environment-github.json
         env:
           API_KEY: ${{ secrets.API_KEY }}
 
       - name: 🧪 Run Postman Tests
         run: |
-          mkdir -p postman-tests/reports
+          mkdir -p tests/reports
           echo "📁 Verifying report directory before Newman run..."
-          ls -la postman-tests/reports || echo "⚠️ Report directory not found"
+          ls -la tests/reports || echo "⚠️ Report directory not found"
 
           echo "🚀 Running Newman..."
-          npx newman run postman-tests/ReqRes.in.postman_collection.json \
-            -e postman-tests/environment-github.json \
+          npx newman run tests/ReqRes.in.postman_collection.json \
+            -e tests/environment-github.json \
             --reporters cli,html \
-            --reporter-html-export postman-tests/reports/report.html \
+            --reporter-html-export tests/reports/report.html \
             || echo "⚠️ Newman run failed"
 
           echo "📄 Checking report output..."
-          ls -la postman-tests/reports
+          ls -la tests/reports
 
       - name: 📤 Upload HTML Report
         id: upload_report
         run: |
-          REPORT_PATH="postman-tests/reports/report.html"
-          FALLBACK_PATH="postman-tests/reports/test.html"
+          REPORT_PATH="tests/reports/report.html"
+          FALLBACK_PATH="tests/reports/test.html"
 
           if [ -s "$REPORT_PATH" ]; then
             echo "✅ report.html found"

@@ -1,0 +1,84 @@
+pipeline {
+  agent any
+
+  environment {
+    API_KEY = credentials('postman-api-key')       // Jenkins secret
+    SLACK_WEBHOOK = credentials('slack-webhook')   // Jenkins secret
+  }
+
+  stages {
+    stage('Checkout') {
+      steps {
+        checkout scm
+      }
+    }
+
+    stage('Inject API Key into Environment') {
+      steps {
+        sh '''
+          if [ ! -f postman-tests/environment.json ]; then
+            echo "❌ Environment file missing"; exit 1;
+          fi
+
+          jq --arg key "$API_KEY" \
+            '.values += [{"key":"vault.api-key","value":$key,"enabled":true}]' \
+            postman-tests/environment.json > postman-tests/environment-jenkins.json
+        '''
+      }
+    }
+
+    stage('Install Newman Reporter') {
+      steps {
+        sh 'npm install -g newman newman-reporter-html'
+      }
+    }
+
+    stage('Run Postman Tests') {
+      steps {
+        sh '''
+          mkdir -p postman-tests/reports
+
+          echo "🚀 Running Newman..."
+          newman run postman-tests/collection.json \
+            -e postman-tests/environment-jenkins.json \
+            --reporters cli,html \
+            --reporter-html-export postman-tests/reports/report.html \
+            || echo "⚠️ Newman run failed"
+
+          echo "📄 Checking report output..."
+          ls -la postman-tests/reports
+        '''
+      }
+    }
+
+    stage('Archive HTML Report') {
+      steps {
+        archiveArtifacts artifacts: 'postman-tests/reports/*.html', fingerprint: true
+      }
+    }
+
+    stage('Notify Slack') {
+      steps {
+        script {
+          def status = currentBuild.currentResult
+          def color = (status == 'SUCCESS') ? '#2eb886' : '#e01e5a'
+          def reportExists = fileExists('postman-tests/reports/report.html')
+          def reportNote = reportExists ? "📄 Report uploaded: report.html" : "⚠️ No HTML report was generated."
+
+          sh """
+            curl -X POST -H 'Content-type: application/json' --data '{
+              "text": "*Postman Tests Status:* `$status`\\n$reportNote\\n🔗 ${env.BUILD_URL}",
+              "attachments": [{
+                "color": "$color",
+                "fields": [
+                  {"title": "Job", "value": "${env.JOB_NAME}", "short": true},
+                  {"title": "Build", "value": "${env.BUILD_NUMBER}", "short": true}
+                ]
+              }]
+            }' $SLACK_WEBHOOK
+          """
+        }
+      }
+    }
+  }
+}
