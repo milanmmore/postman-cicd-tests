@@ -19,16 +19,24 @@ jobs:
         with:
           node-version: "18"
 
+      - name: Cache npm
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-
+
       - name: Install Newman
-        run: npm install -g newman
+        run: npm install newman --save-dev
 
       - name: Install Newman Reporter
-        run: npm install -g newman-reporter-html
+        run: npm install newman-reporter-html --save-dev
 
       - name: Run Postman Tests
         run: |
           mkdir -p postman-tests/reports
-          newman run postman-tests/ReqRes.in.postman_collection.json \
+          npx newman run postman-tests/ReqRes.in.postman_collection.json \
             -e postman-tests/ReqRes.postman_environment.json \
             --reporters cli,html \
             --reporter-html-export postman-tests/reports/report.html
