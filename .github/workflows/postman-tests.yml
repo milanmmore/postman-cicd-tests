@@ -19,6 +19,9 @@ jobs:
         with:
           node-version: "18"
 
+      - name: 📦 Install Newman HTML Reporter
+        run: npm install newman-reporter-html
+
       - name: 🔐 Inject Vault Variable into Environment
         run: |
           if [ ! -f postman-tests/environment.json ]; then
