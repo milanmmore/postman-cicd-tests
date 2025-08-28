@@ -57,13 +57,13 @@ jobs:
 
           if [ -s "$REPORT_PATH" ]; then
             echo "✅ report.html found"
-            echo "report_file=$REPORT_PATH" >> $GITHUB_OUTPUT
+            echo "REPORT_FILE=$REPORT_PATH" >> $GITHUB_ENV
           elif [ -s "$FALLBACK_PATH" ]; then
             echo "⚠️ report.html missing, using test.html"
-            echo "report_file=$FALLBACK_PATH" >> $GITHUB_OUTPUT
+            echo "REPORT_FILE=$FALLBACK_PATH" >> $GITHUB_ENV
           else
             echo "❌ No valid report found"
-            echo "report_file=" >> $GITHUB_OUTPUT
+            echo "REPORT_FILE=" >> $GITHUB_ENV
           fi
         continue-on-error: true
 
@@ -72,7 +72,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: postman-report
-          path: ${{ steps.upload_report.outputs.report_file }}
+          path: ${{ steps.upload_report.outputs.REPORT_FILE }}
           retention-days: 5
 
       - name: 📣 Notify Slack
