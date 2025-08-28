@@ -49,6 +49,9 @@ jobs:
           echo "📄 Checking report output..."
           ls -la tests/reports
 
+      - name: 🕵️ Inspect report folder
+        run: ls -la tests/reports/
+
       - name: 📤 Upload HTML Report
         id: upload_report
         run: |
