@@ -35,20 +35,22 @@ jobs:
 
       - name: 🧹 Clean old reports
         run: rm -f tests/reports/*.html
-        
-      - name: 🧪 Run Postman Tests
+
+      - name: 📁 Create report directory
         run: |
           mkdir -p tests/reports
           echo "📁 Verifying report directory before Newman run..."
           ls -la tests/reports || echo "⚠️ Report directory not found"
 
-          - name: 🕵️ Verify collection file
-            run: |
-              echo "📁 Current directory: $(pwd)"
-              ls -la tests/
-              cat tests/Reqres.in.postman_collection.json | head -n 10
+      - name: 🕵️ Verify collection file
+        run: |
+          echo "📂 Current directory: $(pwd)"
+          ls -la tests/
+          head -n 10 tests/Reqres.in.postman_collection.json || echo "⚠️ Collection file not found"
 
-          echo "🚀 Running Newman..."
+      - name: 🚀 Run Postman Tests
+        run: |
+          echo "🧪 Running Newman..."
           npx newman run ${{ github.workspace }}/tests/Reqres.in.postman_collection.json \
             -e ${{ github.workspace }}/tests/environment-github.json \
             --reporters cli,html \
@@ -64,6 +66,7 @@ jobs:
         id: upload_report
         run: |
           REPORT_PATH="tests/reports/report.html"
+          FALLBACK_PATH="tests/reports/test.html"
 
           if [ -s "$REPORT_PATH" ]; then
             echo "✅ report.html found"
@@ -82,7 +85,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: postman-report
-          path: ${{ steps.upload_report.outputs.REPORT_FILE }}
+          path: ${{ env.REPORT_FILE }}
           retention-days: 5
 
       - name: 📣 Notify Slack
@@ -94,7 +97,7 @@ jobs:
             COLOR="#2eb886"
           fi
 
-          REPORT_FILE="${{ steps.upload_report.outputs.report_file }}"
+          REPORT_FILE="${{ env.REPORT_FILE }}"
           if [ -n "$REPORT_FILE" ]; then
             REPORT_NOTE="📄 Report uploaded: \`$(basename $REPORT_FILE)\`"
           else
