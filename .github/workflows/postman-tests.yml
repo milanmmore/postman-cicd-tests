@@ -42,12 +42,17 @@ jobs:
           echo "📁 Verifying report directory before Newman run..."
           ls -la tests/reports || echo "⚠️ Report directory not found"
 
+          - name: 🕵️ Verify collection file
+            run: |
+              echo "📁 Current directory: $(pwd)"
+              ls -la tests/
+              cat tests/Reqres.in.postman_collection.json | head -n 10
+
           echo "🚀 Running Newman..."
-          npx newman run tests/ReqRes.in.postman_collection.json \
-            -e tests/environment-github.json \
+          npx newman run ${{ github.workspace }}/tests/Reqres.in.postman_collection.json \
+            -e ${{ github.workspace }}/tests/environment-github.json \
             --reporters cli,html \
-            --reporter-html-export tests/reports/report.html \
-            || echo "⚠️ Newman run failed"
+            --reporter-html-export ${{ github.workspace }}/tests/reports/report.html
 
           echo "📄 Checking report output..."
           ls -la tests/reports
